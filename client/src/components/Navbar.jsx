@@ -1,14 +1,22 @@
 import React from "react";
 import { NavLink as Link, useNavigate } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
+import Loading from "./Loading";
+import { logOutAsync } from "../redux/AuthReducer"; // Import the logout action
 
-export default function Navbar({ user, setUser }) {
+export default function Navbar({ user }) {
   const navigate = useNavigate();
+  const dispatch = useDispatch(); // Get dispatch function from Redux
+  const isLoading = useSelector((state) => state.authReducer.isLoading);
+
   const handleLogout = () => {
-    localStorage.removeItem("jwtToken");
-    localStorage.removeItem("user");
-    localStorage.removeItem("tokenExpiration");
-    setUser(null);
-    navigate("/login");
+    dispatch(logOutAsync())
+      .then(() => {
+        navigate("/login");
+      })
+      .catch((error) => {
+        console.error("Logout error:", error);
+      });
   };
 
   return (
@@ -17,7 +25,6 @@ export default function Navbar({ user, setUser }) {
         <div className="max-w-screen-xl flex flex-wrap items-center justify-between mx-auto p-4">
           <Link
             to="/"
-            className="flex items-center"
             aria-label="Flowbite Logo"
             href=""
             className="flex items-center space-x-3 rtl:space-x-reverse"
@@ -99,6 +106,8 @@ export default function Navbar({ user, setUser }) {
           </div>
         </div>
       </nav>
+
+      {isLoading && <Loading />}
     </>
   );
 }

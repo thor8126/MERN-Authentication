@@ -5,19 +5,16 @@ import "./index.css";
 import { BrowserRouter } from "react-router-dom";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { Provider } from "react-redux";
+import { store } from "./redux/store";
 
 ReactDOM.createRoot(document.getElementById("root")).render(
-  <React.StrictMode>
-    <ToastContainer
-      autoClose={1000}
-      newestOnTop={true}
-      closeOnClick
-      theme="colored"
-    />
+  <Provider store={store}>
+    <ToastContainer autoClose={1000} newestOnTop={true} closeOnClick />
     <BrowserRouter future={{ v7_startTransition: true }}>
       <App />
     </BrowserRouter>
-  </React.StrictMode>
+  </Provider>
 );
 
 // import React from "react";

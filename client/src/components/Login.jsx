@@ -1,58 +1,46 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
-import apis from "../API";
+import { useDispatch } from "react-redux"; // Import useDispatch hook
+import { logInAsync } from "../redux/AuthReducer"; // Import logInAsync action creator
 import { useRequireAuth } from "../hooks/authHook";
 
-export default function Login({ setUser }) {
+export default function Login() {
   useRequireAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
+  const dispatch = useDispatch(); // Get dispatch function from Redux
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await fetch(apis.LOGIN_API, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ email, password }),
-      });
-      const data = await response.json();
-      if (!response.ok) {
-        toast.error(data.error || "Login failed");
-        throw new Error(data.error || "Login failed");
-      }
-      if (!data) {
-        toast.error("Empty response from server");
-        throw new Error("Empty response from server");
-      }
-      if (response.ok) {
-        localStorage.setItem("jwtToken", data.token);
-        setUser(data.token);
-        localStorage.setItem("tokenExpiration", data.user.tokenExpiration);
+      // Dispatch logInAsync action with email and password
+      const userlogin = await dispatch(logInAsync({ email, password }));
+      console.log(userlogin.payload.user);
+      // Handle successful login
+      if (userlogin) {
+        localStorage.setItem("jwt", userlogin.payload.user.token);
+        localStorage.setItem(
+          "tokenExpiration",
+          userlogin.payload.user.tokenExpiration
+        );
 
         const newUser = {
-          email: data.user.email,
-          username: data.user.username,
-          id: data.user._id,
-          profileImage: data.user.profileImage,
+          email: userlogin.payload.user.email,
+          username: userlogin.payload.user.username,
+          id: userlogin.payload.user._id,
+          profileImage: userlogin.payload.user.profileImage,
         };
         localStorage.setItem("user", JSON.stringify(newUser));
-        setUser(newUser);
         toast.success("Login successful");
         navigate("/");
         setEmail("");
         setPassword("");
-      } else {
-        setEmail("");
-        setPassword("");
-        toast.error(data.error || "Login failed");
       }
     } catch (error) {
-      toast.error("An error occurred");
+      // Handle login error
+      toast.error(error.message || "Login failed");
       console.error("An error occurred:", error);
     }
   };

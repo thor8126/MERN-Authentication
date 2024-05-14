@@ -9,7 +9,7 @@ function Home({ user }) {
           <div className="flex flex-col items-center mt-10">
             <img
               src={`data:image/avif;base64,${user.profileImage}`}
-              class="w-20 h-20 rounded-full"
+              className="w-20 h-20 rounded-full"
               alt="Profile Image"
             />
             <p>Welcome {user.username}!</p>

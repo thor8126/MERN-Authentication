@@ -1,41 +1,46 @@
 import { toast } from "react-toastify";
-import axios from "axios";
+import { useDispatch } from "react-redux";
+import { registerAsync, logInAsync } from "../redux/AuthReducer"; // Import logInAsync
 import React, { useState } from "react";
-import apis from "../API";
-import { useNavigate } from "react-router-dom";
-// import { useRequireAuth } from "../hooks/authHook";
 
 export default function Register() {
-  // useRequireAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const dispatch = useDispatch(); // Get dispatch function from Redux
 
   const handleSubmit = (event) => {
     event.preventDefault();
-    const navigate = useNavigate();
 
     const clearForm = () => {
       setEmail("");
       setPassword("");
       setConfirmPassword("");
     };
+
     if (password !== confirmPassword) {
       toast.error("Passwords do not match");
       return;
     }
-    axios
-      .post(apis.REGISTER_API, {
-        email,
-        password,
-      })
+
+    // Dispatch registerAsync action with email and password
+    dispatch(registerAsync({ email, password }))
       .then((res) => {
         toast.success("Registered successfully");
-        navigate("/login");
         clearForm();
+
+        // Dispatch logInAsync action with email and password after successful registration
+        dispatch(logInAsync({ email, password }))
+          .then(() => {
+            toast.success("Logged in successfully");
+            // Redirect to dashboard or any other page after successful login
+          })
+          .catch((loginError) => {
+            toast.error(loginError.message || "Login failed");
+          });
       })
-      .catch((err) => {
-        toast.error(err.response.data);
+      .catch((registrationError) => {
+        toast.error(registrationError.message || "Registration failed");
       });
   };
 
